@@ -6,10 +6,11 @@
     {% for movie in movies %}
     <li>{{ movie.title }} - {{ movie.year }}
         <span class="float-right">
-            <a class="imdb" href="https://www.imdb.com/find?q={{ movie.title }}" target="_blank" title="Find this movie on IMDb">IMDb</a>
+            <a class="imdb" href="https://movie.douban.com/subject_search?search_text={{ movie.title }}" target="_blank" title="Find this movie on 豆瓣">豆瓣电影</a>
         </span>
     </li>
     {% endfor %}
 </ul>
+<br>
 <img alt="herald-of-spring" class="footer_gif" src="{{ url_for('static', filename='images/footer_gif.gif')}}">
 {% endblock %}

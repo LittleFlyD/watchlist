@@ -105,9 +105,9 @@ input[name=year] {
 .imdb {
     font-size: 12px;
     font-weight: bold;
-    color: black;
+    color: white;
     text-decoration: none;
-    background: #F5C518;
+    background: #007722;
     border-radius: 5px;
     padding: 3px 5px;
 }
