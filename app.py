@@ -3,10 +3,17 @@ import os
 import click
 from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
 from markupsafe import escape
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired, Length
 
 # APP
 app = Flask(__name__)
+
+# Flask-WTF 默认支持CSRF（跨站请求伪造）保护，
+# 只需要在程序中设置一个密钥。
+# Flask-WTF使用这个密钥生成加密令牌，再用令牌验证表单中数据的真伪
 app.config['SECRET_KEY'] = 'dev'  # 等同于 app.secret_key = 'dev'
 
 # DB
@@ -70,16 +77,23 @@ def inject_user():
     return dict(user=user)
 
 
+# Forms
+class AddItemForm(FlaskForm):  # Flask-WTF
+    title = StringField(validators=[DataRequired(), Length(1, 60)])
+    year = StringField(validators=[DataRequired(), Length(4)])
+    submit = SubmitField(u'Add')
+
+
 # Routes
 @app.route('/', methods=["GET", "POST"])
 @app.route('/index', methods=["GET", "POST"])
 def index():
-    if request.method == 'POST':  # 判断是否是 POST 请求
-        # 获取表单数据
-        title = request.form.get('title')  # 传入表单对应输入字段的 name 值
-        year = request.form.get('year')
+    form = AddItemForm()
+    if form.validate_on_submit():
+        title = form.title.data
+        year = form.year.data
         # 验证数据
-        if not title or not year or len(year) > 4 or len(title) > 60:
+        if not title or not year or len(title) > 60 or len(year) > 4:
             flash('Invalid input.')  # 显示错误提示
             return redirect(url_for('index'))  # 重定向回主页
         # 保存表单数据到数据库
@@ -90,7 +104,7 @@ def index():
         return redirect(url_for('index'))  # 重定向回主页
 
     movies = Movie.query.all()
-    return render_template('index.html', movies=movies)
+    return render_template('index.html', movies=movies, form=form)
 
 
 @app.route('/movie/edit/<int:movie_id>', methods=['GET', 'POST'])
@@ -121,6 +135,7 @@ def delete(movie_id):
     db.session.commit()  # 提交数据库会话
     flash('Item deleted.')
     return redirect(url_for('index'))  # 重定向回主页
+
 
 @app.route('/user/<user_name>')
 def user_page(user_name):
