@@ -4,7 +4,7 @@
 <p>{{ movies|length }} Titles</p>
 <!-- 在模板中可以直接使用 current_user 变量 -->
 {% if current_user.is_authenticated %}
-<form action='/index' method="post">
+<form method="post" action="/index">
     {{ form.hidden_tag() }}
     {{ form.title.label }}{{ form.title() }}
     {{ form.year.label }}{{ form.year() }}

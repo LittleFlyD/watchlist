@@ -1,4 +1,5 @@
 import os
+import sys
 
 import click
 from flask import Flask, render_template, request, flash, redirect, url_for
@@ -30,7 +31,10 @@ def load_user(user_id):  # 创建用户加载回调函数，接受用户 ID 作�
 app.config['SECRET_KEY'] = 'dev'  # 等同于 app.secret_key = 'dev'
 
 # DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path.join(app.root_path, 'data.db')
+if 'unittest' in sys.modules.keys():
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path.join(app.root_path, 'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
 db = SQLAlchemy(app)  # 初始化扩展，传入程序实例 app
 
@@ -86,7 +90,7 @@ def forge():
         db.session.add(m)
     db.session.commit()
 
-    click.echo('DB forge done.')
+    click.echo('Done.')
 
 
 @app.cli.command()
