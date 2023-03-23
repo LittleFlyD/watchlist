@@ -5,14 +5,16 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from markupsafe import escape
 
+# APP
 app = Flask(__name__)
 
+
+# DB
 # 在扩展类实例化前加载配置
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path.join(app.root_path, 'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
 
 db = SQLAlchemy(app)  # 初始化扩展，传入程序实例 app
-
 
 class User(db.Model):  # 表名将会是 user（自动生成，小写处理）
     id = db.Column(db.Integer, primary_key=True)  # 主键
@@ -25,7 +27,7 @@ class Movie(db.Model):  # 表名将会是 movie
     year = db.Column(db.String(4))  # 电影年份
 
 
-@app.cli.command()  #注册为命令，可以传入name参数来自定义命令
+@app.cli.command()  # 注册为命令，可以传入name参数来自定义命令
 @click.option('--drop', is_flag=True, help='Create after drop.')  # 设置选项
 def initdb(drop):
     if drop:
@@ -60,15 +62,19 @@ def forge():
     click.echo('DB forge done.')
 
 
+# context
+@app.context_processor
+def inject_user():
+    user = User.query.first()
+    return dict(user=user)
 
 
+# Route
 @app.route('/')
 @app.route('/index')
 def index():
-    user = User.query.first()
     movies = Movie.query.all()
-    return render_template('index.html', user=user, movies=movies)
-
+    return render_template('index.html', movies=movies)
 
 @app.route('/user/<user_name>')
 def user_page(user_name):
@@ -77,3 +83,8 @@ def user_page(user_name):
     # 这样在返回响应时浏览器就不会把它们当做代码执行。
     return f'<h1>Hello {escape(user_name)}! Welcome to my Film-Watchlist</h1><img ' \
            f'src="http://helloflask.com/totoro.gif">'
+
+
+@app.errorhandler(404)
+def page_not_found():
+    return render_template('404.html'), 404
