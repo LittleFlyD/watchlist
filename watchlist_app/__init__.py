@@ -33,13 +33,13 @@ def inject_user():
 # Flask-WTF 默认支持CSRF（跨站请求伪造）保护，
 # 只需要在程序中设置一个密钥。
 # Flask-WTF使用这个密钥生成加密令牌，再用令牌验证表单中数据的真伪
-app.config["SECRET_KEY"] = "dev"  # 等同于 app.secret_key = 'dev'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
 
 # DB
 if "unittest" in sys.modules.keys():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////" + os.path.join(os.path.dirname(app.root_path), "data.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////" + os.path.join(os.path.dirname(app.root_path), os.getenv('DATABASE_FILE', 'data.db'))
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False  # 关闭对模型修改的监控
 db = SQLAlchemy(app)  # 初始化扩展，传入程序实例 app
 
@@ -48,4 +48,4 @@ db = SQLAlchemy(app)  # 初始化扩展，传入程序实例 app
 # 但是因为这几个模块同时也要导入构造文件中的程序实例，为了避免循环依赖（A 导入 B，B 导入 A），
 # 我们把这一行导入语句放到构造文件的结尾。
 # 同样的，load_user() 函数和 inject_user() 函数中使用的模型类也在函数内进行导入。
-from . import views, errors, commands
+from . import views, errors, commands  # noqa
